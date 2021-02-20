@@ -1,271 +1,571 @@
-//  Copyright © 2015-2016 Apple Inc. All rights reserved.
-(
-
-
-    // Bundle
-    {   Type = ProductType;
-        Identifier = com.apple.product-type.bundle;
-        Class = PBXBundleProductType;
-        Name = "Bundle";
-        Description = "Generic bundle";
-        IconNamePrefix = "TargetPlugin";
-        DefaultTargetName = "Bundle";
-        DefaultBuildProperties = {
-            FULL_PRODUCT_NAME = "$(WRAPPER_NAME)";
-            MACH_O_TYPE = "mh_bundle";
-            WRAPPER_PREFIX = "";
-            WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
-            WRAPPER_EXTENSION = "bundle";
-            WRAPPER_NAME = "$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)";
-            FRAMEWORK_FLAG_PREFIX = "-framework";
-            LIBRARY_FLAG_PREFIX = "-l";
-            LIBRARY_FLAG_NOSPACE = YES;
-            STRIP_STYLE = "non-global";
-            GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
-        };
-        PackageTypes = (
-            com.apple.package-type.wrapper
-        );
-        IsWrapper = YES;
-        HasInfoPlist = YES;
-        HasInfoPlistStrings = YES;
-        WantsBundleIdentifierEditing = YES;
-        WantsSigningEditing = YES;
-    },
-
-    // Application
-    {   Type = ProductType;
-        Identifier = com.apple.product-type.application;
-        BasedOn = com.apple.product-type.bundle;
-        Class = PBXApplicationProductType;
-        Name = "Application";
-        Description = "Application";
-        IconNamePrefix = "TargetApp";
-        DefaultTargetName = "Application";
-        SupportsOnDemandResources = YES;
-        DefaultBuildProperties = {
-            MACH_O_TYPE = "mh_execute";
-            GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-            GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
-            WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
-            WRAPPER_EXTENSION = "app";
-            INSTALL_PATH = "$(LOCAL_APPS_DIR)";
-            STRIP_STYLE = "all";
-
-            // These four prevent the simulator from inheriting this specification.
-            // They probably go at the platform level, but the internal SDK doesn't want them, so they are defined here...
-            ENTITLEMENTS_ALLOWED = YES;
-            PROVISIONING_PROFILE_REQUIRED = YES;
-            CODE_SIGNING_ALLOWED = YES;
-            RESOURCE_RULES_REQUIRED = YES;
-			ENABLE_ON_DEMAND_RESOURCES = YES;
-            SUPPORTS_MACCATALYST = NO;
-        };
-        PackageTypes = (
-            com.apple.package-type.wrapper.application
-        );
-
-        /** Product type validation hooks */
-        Validation = {
-
-            // Checks - a dictionary of checks that are perform just prior to building the product
-            // Each dictionary key is the "XCPropertyMacroExpression" to evaluate
-            // The dictionary value contains the error message to display if the condition evaluates to false.
-            Checks = {
-                // excuse the double negative here, but the message is printed if the test 'fails'
-                "!(  $(VALIDATE_PRODUCT) == NO && $(CODE_SIGN_IDENTITY) == 'iPhone Distribution'  )" = "The Validate Built Product build setting was not enabled when building for Distribution.";
-            };
-
-            // ValidationToolSpec - the identifier of the tool (script) to run after a target is constructed.
-            ValidationToolSpec = "com.apple.build-tools.platform.validate";
-        };
-        CanEmbedCompilerSanitizerLibraries = YES;
-        RunpathSearchPathForEmbeddedFrameworks = "@executable_path/Frameworks";
-        ValidateEmbeddedBinaries = YES;
-        ProvisioningProfileSupported = YES;
-        ProvisioningProfileRequired = YES;
-        WantsBundleIdentifierEditing = YES;
-        WantsSigningEditing = YES;
-    },
-
-    // App Extension
-    {   Type = ProductType;
-        Identifier = "com.apple.product-type.app-extension";
-        BasedOn = "com.apple.product-type.pluginkit-plugin";
-        Class = PBXBundleProductType;
-        Name = "App Extension";
-        Description = "App Extension";
-        IconNamePrefix = AppExtension;
-        DefaultTargetName = "App Extension";
-        "DefaultBuildProperties" = {
-            "CODE_SIGNING_ALLOWED" = YES;
-            "APPLICATION_EXTENSION_API_ONLY" = YES;
-            "PRODUCT_SPECIFIC_LDFLAGS" = "-e _NSExtensionMain";
-            WRAPPER_EXTENSION = "appex";
-            ASSETCATALOG_COMPILER_STANDALONE_ICON_BEHAVIOR = all; // Include standalone files for all reps of extension icons <rdar://problem/32627780>
-            SUPPORTS_MACCATALYST = NO;
-        };
-        PackageTypes = (
-            "com.apple.package-type.app-extension",
-        );
-        ProvisioningProfileSupported = YES;
-        ProvisioningProfileRequired = YES;
-        WantsBundleIdentifierEditing = YES;
-        WantsSigningEditing = YES;
-    },
-
-    // Unit Test Bundle Product
-    {   Type = ProductType;
-        Identifier = com.apple.product-type.bundle.unit-test;
-        BasedOn = com.apple.product-type.bundle;
-        Class = PBXXCTestBundleProductType;
-        Name = "Unit Test Bundle";
-        Description = "Unit Test Bundle";
-        DefaultBuildProperties = {
-            WRAPPER_EXTENSION = "xctest";
-            ENABLE_TESTING_SEARCH_PATHS = YES;
-            PRODUCT_SPECIFIC_LDFLAGS = "-framework XCTest";
-            PRODUCT_TYPE_SWIFT_STDLIB_TOOL_FLAGS = "--scan-executable \"$(PLATFORM_DIR)/Developer/usr/lib/libXCTestSwiftSupport.dylib\"";
-            ENABLE_BITCODE = NO;
-            CODE_SIGNING_ALLOWED = YES;
-            ENTITLEMENTS_REQUIRED = NO;
-            XCTRUNNER_PATH = "$(XCTRUNNER_PATH$(TEST_BUILD_STYLE))";
-        };
-        PackageTypes = (
-            com.apple.package-type.bundle.unit-test
-        );
-        CanEmbedCompilerSanitizerLibraries = YES;
-        IsUnitTest = YES;
-        WantsBundleIdentifierEditing = NO;
-    },
-
-    // UI Testing Bundle
-    {   Type = ProductType;
-        Identifier = com.apple.product-type.bundle.ui-testing;
-        BasedOn = com.apple.product-type.bundle.unit-test;
-        Class = PBXXCTestBundleProductType;
-        Name = "UI Testing Bundle";
-        Description = "UI Testing Bundle";
-        DefaultBuildProperties = {
-            USES_XCTRUNNER = "YES";
-        };
-        PackageTypes = (
-            com.apple.package-type.bundle.unit-test
-        );
-        ProvisioningProfileSupported = YES;
-        ProvisioningProfileRequired = YES;
-        IsUITest = YES;
-        InfoPlistAdditions = {
-            XCTContainsUITests = YES;
-        };
-        WantsBundleIdentifierEditing = NO;
-    },
-
-    // Legacy OCUnit Test Bundle Product
-    {   Type = ProductType;
-        Identifier = com.apple.product-type.bundle.ocunit-test;
-        BasedOn = com.apple.product-type.bundle;
-        Class = PBXBundleProductType;
-        Name = "OCUnit Test Bundle";
-        Description = "OCUnit Test Bundle";
-        DefaultBuildProperties = {
-            WRAPPER_EXTENSION = "octest";
-            ENABLE_BITCODE = NO;
-            CODE_SIGNING_ALLOWED = YES;
-            ENTITLEMENTS_REQUIRED = NO;
-        };
-        PackageTypes = (
-            com.apple.package-type.bundle.ocunit-test
-        );
-        IsUnitTest = YES;
-    },
-
-    // Dynamic library
-    {   Type = ProductType;
-        Identifier = com.apple.product-type.library.dynamic;
-        Class = PBXDynamicLibraryProductType;
-        Name = "Dynamic Library";
-        Description = "Dynamic library";
-        IconNamePrefix = "TargetLibrary";
-        DefaultTargetName = "Dynamic Library";
-        DefaultBuildProperties = {
-            FULL_PRODUCT_NAME = "$(EXECUTABLE_NAME)";
-            MACH_O_TYPE = "mh_dylib";
-            REZ_EXECUTABLE = YES;
-            EXECUTABLE_SUFFIX = ".$(EXECUTABLE_EXTENSION)";
-            EXECUTABLE_EXTENSION = "dylib";
-            PUBLIC_HEADERS_FOLDER_PATH = "/usr/local/include";
-            PRIVATE_HEADERS_FOLDER_PATH = "/usr/local/include";
-            INSTALL_PATH = "/usr/local/lib";
-            DYLIB_INSTALL_NAME_BASE = "$(INSTALL_PATH)";
-            LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
-            DYLIB_COMPATIBILITY_VERSION = "1";
-            DYLIB_CURRENT_VERSION = "1";
-            FRAMEWORK_FLAG_PREFIX = "-framework";
-            LIBRARY_FLAG_PREFIX = "-l";
-            LIBRARY_FLAG_NOSPACE = YES;
-            STRIP_STYLE = "debugging";
-            GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
-            CODE_SIGNING_ALLOWED = YES;
-            CODE_SIGNING_REQUIRED = NO;
-        };
-        PackageTypes = (
-            com.apple.package-type.mach-o-dylib   // default
-        );
-    },
-
-    // Framework
-    {   Type = ProductType;
-        Identifier = com.apple.product-type.framework;
-        BasedOn = com.apple.product-type.bundle;
-        Class = PBXFrameworkProductType;
-        Name = "Framework";
-        Description = "Framework";
-        IconNamePrefix = "TargetFramework";
-        DefaultTargetName = "Framework";
-        DefaultBuildProperties = {
-            MACH_O_TYPE = "mh_dylib";
-            FRAMEWORK_VERSION = "A";
-            WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
-            WRAPPER_EXTENSION = "framework";
-            INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-            DYLIB_INSTALL_NAME_BASE = "$(INSTALL_PATH)";
-            LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
-            STRIP_STYLE = "debugging";
-            CODE_SIGNING_ALLOWED = YES;
-            CODE_SIGNING_REQUIRED = NO;
-            ENTITLEMENTS_REQUIRED = NO;
-            CODE_SIGNING_REQUIRES_TEAM = YES;
-        };
-        PackageTypes = (
-            com.apple.package-type.wrapper.framework
-        );
-        WantsBundleIdentifierEditing = YES;
-        WantsSigningEditing = YES;
-    },
-
-    // XPC Service
-    {
-        Type = ProductType;
-        Identifier = "com.apple.product-type.xpc-service";
-        BasedOn = "com.apple.product-type.bundle";
-        Class = PBXBundleProductType;
-        Name = "XPC Service";
-        Description = "XPC Service";
-        IconNamePrefix = XPCService;
-        DefaultTargetName = "XPC Service";
-        CanEmbedCompilerSanitizerLibraries = YES;
-        "DefaultBuildProperties" = {
-            "MACH_O_TYPE" = "mh_execute";
-            WRAPPER_EXTENSION = "xpc";
-            CODE_SIGNING_ALLOWED = YES;
-        };
-        PackageTypes = (
-            "com.apple.package-type.xpc-service",
-        );
-        ProvisioningProfileSupported = YES;
-        ProvisioningProfileRequired = YES;
-        WantsBundleIdentifierEditing = YES;
-        WantsSigningEditing = YES;
-    },
-)
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<array>
+	<dict>
+		<key>Class</key>
+		<string>PBXToolProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>CODE_SIGNING_ALLOWED</key>
+			<string>YES</string>
+			<key>EXECUTABLE_PREFIX</key>
+			<string></string>
+			<key>EXECUTABLE_SUFFIX</key>
+			<string></string>
+			<key>FRAMEWORK_FLAG_PREFIX</key>
+			<string>-framework</string>
+			<key>FULL_PRODUCT_NAME</key>
+			<string>$(EXECUTABLE_NAME)</string>
+			<key>GCC_DYNAMIC_NO_PIC</key>
+			<string>NO</string>
+			<key>GCC_INLINES_ARE_PRIVATE_EXTERN</key>
+			<string>YES</string>
+			<key>GCC_SYMBOLS_PRIVATE_EXTERN</key>
+			<string>YES</string>
+			<key>INSTALL_PATH</key>
+			<string>/usr/local/bin</string>
+			<key>LIBRARY_FLAG_NOSPACE</key>
+			<string>YES</string>
+			<key>LIBRARY_FLAG_PREFIX</key>
+			<string>-l</string>
+			<key>MACH_O_TYPE</key>
+			<string>mh_execute</string>
+			<key>REZ_EXECUTABLE</key>
+			<string>YES</string>
+			<key>STRIP_STYLE</key>
+			<string>all</string>
+		</dict>
+		<key>DefaultTargetName</key>
+		<string>Command-line Tool</string>
+		<key>Description</key>
+		<string>Standalone command-line tool</string>
+		<key>IconNamePrefix</key>
+		<string>TargetExecutable</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.tool</string>
+		<key>Name</key>
+		<string>Command-line Tool</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.mach-o-executable</string>
+		</array>
+		<key>Type</key>
+		<string>ProductType</string>
+		<key>WantsBundleIdentifierEditing</key>
+		<string>YES</string>
+		<key>WantsSigningEditing</key>
+		<string>YES</string>
+	</dict>
+	<dict>
+		<key>DefaultBuildSettings</key>
+		<dict>
+			<key>EXECUTABLE_NAME</key>
+			<string>$(EXECUTABLE_PREFIX)$(PRODUCT_NAME)$(EXECUTABLE_VARIANT_SUFFIX)$(EXECUTABLE_SUFFIX)</string>
+			<key>EXECUTABLE_PATH</key>
+			<string>$(EXECUTABLE_NAME)</string>
+			<key>EXECUTABLE_PREFIX</key>
+			<string></string>
+			<key>EXECUTABLE_SUFFIX</key>
+			<string></string>
+		</dict>
+		<key>Description</key>
+		<string>Mach-O executable</string>
+		<key>Identifier</key>
+		<string>com.apple.package-type.mach-o-executable</string>
+		<key>Name</key>
+		<string>Mach-O Executable</string>
+		<key>ProductReference</key>
+		<dict>
+			<key>FileType</key>
+			<string>compiled.mach-o.executable</string>
+			<key>IsLaunchable</key>
+			<string>YES</string>
+			<key>Name</key>
+			<string>$(EXECUTABLE_NAME)</string>
+		</dict>
+		<key>Type</key>
+		<string>PackageType</string>
+	</dict>
+	<dict>
+		<key>Class</key>
+		<string>PBXBundleProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>FRAMEWORK_FLAG_PREFIX</key>
+			<string>-framework</string>
+			<key>FULL_PRODUCT_NAME</key>
+			<string>$(WRAPPER_NAME)</string>
+			<key>GCC_INLINES_ARE_PRIVATE_EXTERN</key>
+			<string>YES</string>
+			<key>LIBRARY_FLAG_NOSPACE</key>
+			<string>YES</string>
+			<key>LIBRARY_FLAG_PREFIX</key>
+			<string>-l</string>
+			<key>MACH_O_TYPE</key>
+			<string>mh_bundle</string>
+			<key>STRIP_STYLE</key>
+			<string>non-global</string>
+			<key>WRAPPER_EXTENSION</key>
+			<string>bundle</string>
+			<key>WRAPPER_NAME</key>
+			<string>$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)</string>
+			<key>WRAPPER_PREFIX</key>
+			<string></string>
+			<key>WRAPPER_SUFFIX</key>
+			<string>.$(WRAPPER_EXTENSION)</string>
+		</dict>
+		<key>DefaultTargetName</key>
+		<string>Bundle</string>
+		<key>Description</key>
+		<string>Generic bundle</string>
+		<key>HasInfoPlist</key>
+		<string>YES</string>
+		<key>HasInfoPlistStrings</key>
+		<string>YES</string>
+		<key>IconNamePrefix</key>
+		<string>TargetPlugin</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.bundle</string>
+		<key>IsWrapper</key>
+		<string>YES</string>
+		<key>Name</key>
+		<string>Bundle</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.wrapper</string>
+		</array>
+		<key>Type</key>
+		<string>ProductType</string>
+		<key>WantsBundleIdentifierEditing</key>
+		<string>YES</string>
+		<key>WantsSigningEditing</key>
+		<string>YES</string>
+	</dict>
+	<dict>
+		<key>BasedOn</key>
+		<string>com.apple.product-type.bundle</string>
+		<key>CanEmbedCompilerSanitizerLibraries</key>
+		<string>YES</string>
+		<key>Class</key>
+		<string>PBXApplicationProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>CODE_SIGNING_ALLOWED</key>
+			<string>YES</string>
+			<key>ENABLE_ON_DEMAND_RESOURCES</key>
+			<string>YES</string>
+			<key>ENTITLEMENTS_ALLOWED</key>
+			<string>YES</string>
+			<key>GCC_INLINES_ARE_PRIVATE_EXTERN</key>
+			<string>YES</string>
+			<key>GCC_SYMBOLS_PRIVATE_EXTERN</key>
+			<string>YES</string>
+			<key>INSTALL_PATH</key>
+			<string>$(LOCAL_APPS_DIR)</string>
+			<key>MACH_O_TYPE</key>
+			<string>mh_execute</string>
+			<key>PROVISIONING_PROFILE_REQUIRED</key>
+			<string>YES</string>
+			<key>RESOURCE_RULES_REQUIRED</key>
+			<string>YES</string>
+			<key>STRIP_STYLE</key>
+			<string>all</string>
+			<key>SUPPORTS_MACCATALYST</key>
+			<string>NO</string>
+			<key>WRAPPER_EXTENSION</key>
+			<string>app</string>
+			<key>WRAPPER_SUFFIX</key>
+			<string>.$(WRAPPER_EXTENSION)</string>
+		</dict>
+		<key>DefaultTargetName</key>
+		<string>Application</string>
+		<key>Description</key>
+		<string>Application</string>
+		<key>IconNamePrefix</key>
+		<string>TargetApp</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.application</string>
+		<key>Name</key>
+		<string>Application</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.wrapper.application</string>
+		</array>
+		<key>ProvisioningProfileRequired</key>
+		<string>YES</string>
+		<key>ProvisioningProfileSupported</key>
+		<string>YES</string>
+		<key>RunpathSearchPathForEmbeddedFrameworks</key>
+		<string>@executable_path/Frameworks</string>
+		<key>SupportsOnDemandResources</key>
+		<string>YES</string>
+		<key>Type</key>
+		<string>ProductType</string>
+		<key>ValidateEmbeddedBinaries</key>
+		<string>YES</string>
+		<key>Validation</key>
+		<dict>
+			<key>Checks</key>
+			<dict>
+				<key>!(  $(VALIDATE_PRODUCT) == NO &amp;&amp; $(CODE_SIGN_IDENTITY) == 'iPhone Distribution'  )</key>
+				<string>The Validate Built Product build setting was not enabled when building for Distribution.</string>
+			</dict>
+			<key>ValidationToolSpec</key>
+			<string>com.apple.build-tools.platform.validate</string>
+		</dict>
+		<key>WantsBundleIdentifierEditing</key>
+		<string>YES</string>
+		<key>WantsSigningEditing</key>
+		<string>YES</string>
+	</dict>
+	<dict>
+		<key>BasedOn</key>
+		<string>com.apple.product-type.pluginkit-plugin</string>
+		<key>Class</key>
+		<string>PBXBundleProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>APPLICATION_EXTENSION_API_ONLY</key>
+			<string>YES</string>
+			<key>CODE_SIGNING_ALLOWED</key>
+			<string>YES</string>
+			<key>PRODUCT_SPECIFIC_LDFLAGS</key>
+			<string>-e _NSExtensionMain</string>
+			<key>SUPPORTS_MACCATALYST</key>
+			<string>NO</string>
+			<key>WRAPPER_EXTENSION</key>
+			<string>appex</string>
+		</dict>
+		<key>DefaultTargetName</key>
+		<string>App Extension</string>
+		<key>Description</key>
+		<string>App Extension</string>
+		<key>IconNamePrefix</key>
+		<string>AppExtension</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.app-extension</string>
+		<key>Name</key>
+		<string>App Extension</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.app-extension</string>
+		</array>
+		<key>ProvisioningProfileRequired</key>
+		<string>YES</string>
+		<key>ProvisioningProfileSupported</key>
+		<string>YES</string>
+		<key>Type</key>
+		<string>ProductType</string>
+		<key>WantsBundleIdentifierEditing</key>
+		<string>YES</string>
+		<key>WantsSigningEditing</key>
+		<string>YES</string>
+	</dict>
+	<dict>
+		<key>BasedOn</key>
+		<string>com.apple.product-type.bundle</string>
+		<key>CanEmbedCompilerSanitizerLibraries</key>
+		<string>YES</string>
+		<key>Class</key>
+		<string>PBXXCTestBundleProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>CODE_SIGNING_ALLOWED</key>
+			<string>YES</string>
+			<key>ENABLE_BITCODE</key>
+			<string>NO</string>
+			<key>ENABLE_TESTING_SEARCH_PATHS</key>
+			<string>YES</string>
+			<key>ENTITLEMENTS_REQUIRED</key>
+			<string>NO</string>
+			<key>PRODUCT_SPECIFIC_LDFLAGS</key>
+			<string>-framework XCTest</string>
+			<key>PRODUCT_TYPE_FRAMEWORK_SEARCH_PATHS</key>
+			<string>$(TEST_FRAMEWORK_SEARCH_PATHS$(TEST_BUILD_STYLE))</string>
+			<key>PRODUCT_TYPE_LIBRARY_SEARCH_PATHS</key>
+			<string>$(TEST_LIBRARY_SEARCH_PATHS$(TEST_BUILD_STYLE))</string>
+			<key>PRODUCT_TYPE_SWIFT_INCLUDE_PATHS</key>
+			<string>$(TEST_LIBRARY_SEARCH_PATHS$(TEST_BUILD_STYLE))</string>
+			<key>PRODUCT_TYPE_SWIFT_STDLIB_TOOL_FLAGS</key>
+			<string>--scan-executable "$(PLATFORM_DIR)/Developer/usr/lib/libXCTestSwiftSupport.dylib"</string>
+			<key>TEST_FRAMEWORK_SEARCH_PATHS</key>
+			<array>
+				<string>$(inherited)</string>
+				<string>$(PLATFORM_DIR)/Developer/$(TEST_FRAMEWORK_DEVELOPER_VARIANT_SUBPATH)Library/Frameworks</string>
+			</array>
+			<key>TEST_LIBRARY_SEARCH_PATHS</key>
+			<array>
+				<string>$(inherited)</string>
+				<string>$(PLATFORM_DIR)/Developer/$(TEST_FRAMEWORK_DEVELOPER_VARIANT_SUBPATH)usr/lib</string>
+			</array>
+			<key>WRAPPER_EXTENSION</key>
+			<string>xctest</string>
+			<key>XCTRUNNER_PATH</key>
+			<string>$(XCTRUNNER_PATH$(TEST_BUILD_STYLE))</string>
+		</dict>
+		<key>Description</key>
+		<string>Unit Test Bundle</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.bundle.unit-test</string>
+		<key>IsUnitTest</key>
+		<string>YES</string>
+		<key>Name</key>
+		<string>Unit Test Bundle</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.bundle.unit-test</string>
+		</array>
+		<key>Type</key>
+		<string>ProductType</string>
+		<key>WantsBundleIdentifierEditing</key>
+		<string>NO</string>
+	</dict>
+	<dict>
+		<key>BasedOn</key>
+		<string>com.apple.product-type.bundle.unit-test</string>
+		<key>Class</key>
+		<string>PBXXCTestBundleProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>ENABLE_BITCODE</key>
+			<string>NO</string>
+			<key>PRODUCT_SPECIFIC_LDFLAGS</key>
+			<string>-framework XCTest</string>
+			<key>PRODUCT_TYPE_FRAMEWORK_SEARCH_PATHS</key>
+			<string>$(TEST_FRAMEWORK_SEARCH_PATHS$(TEST_BUILD_STYLE))</string>
+			<key>PRODUCT_TYPE_LIBRARY_SEARCH_PATHS</key>
+			<string>$(TEST_LIBRARY_SEARCH_PATHS$(TEST_BUILD_STYLE))</string>
+			<key>PRODUCT_TYPE_SWIFT_INCLUDE_PATHS</key>
+			<string>$(TEST_LIBRARY_SEARCH_PATHS$(TEST_BUILD_STYLE))</string>
+			<key>TEST_FRAMEWORK_SEARCH_PATHS</key>
+			<array>
+				<string>$(inherited)</string>
+				<string>$(PLATFORM_DIR)/Developer/$(TEST_FRAMEWORK_DEVELOPER_VARIANT_SUBPATH)Library/Frameworks</string>
+			</array>
+			<key>TEST_LIBRARY_SEARCH_PATHS</key>
+			<array>
+				<string>$(inherited)</string>
+				<string>$(PLATFORM_DIR)/Developer/$(TEST_FRAMEWORK_DEVELOPER_VARIANT_SUBPATH)usr/lib</string>
+			</array>
+			<key>USES_XCTRUNNER</key>
+			<string>YES</string>
+			<key>WRAPPER_EXTENSION</key>
+			<string>xctest</string>
+			<key>XCTRUNNER_PATH</key>
+			<string>$(XCTRUNNER_PATH$(TEST_BUILD_STYLE))</string>
+		</dict>
+		<key>Description</key>
+		<string>UI Testing Bundle</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.bundle.ui-testing</string>
+		<key>InfoPlistAdditions</key>
+		<dict>
+			<key>XCTContainsUITests</key>
+			<string>YES</string>
+		</dict>
+		<key>IsUITest</key>
+		<string>YES</string>
+		<key>Name</key>
+		<string>UI Testing Bundle</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.bundle.unit-test</string>
+		</array>
+		<key>ProvisioningProfileRequired</key>
+		<string>YES</string>
+		<key>ProvisioningProfileSupported</key>
+		<string>YES</string>
+		<key>Type</key>
+		<string>ProductType</string>
+		<key>WantsBundleIdentifierEditing</key>
+		<string>NO</string>
+	</dict>
+	<dict>
+		<key>BasedOn</key>
+		<string>com.apple.product-type.bundle</string>
+		<key>Class</key>
+		<string>PBXBundleProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>CODE_SIGNING_ALLOWED</key>
+			<string>YES</string>
+			<key>ENABLE_BITCODE</key>
+			<string>NO</string>
+			<key>ENTITLEMENTS_REQUIRED</key>
+			<string>NO</string>
+			<key>WRAPPER_EXTENSION</key>
+			<string>octest</string>
+		</dict>
+		<key>Description</key>
+		<string>OCUnit Test Bundle</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.bundle.ocunit-test</string>
+		<key>IsUnitTest</key>
+		<string>YES</string>
+		<key>Name</key>
+		<string>OCUnit Test Bundle</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.bundle.ocunit-test</string>
+		</array>
+		<key>Type</key>
+		<string>ProductType</string>
+	</dict>
+	<dict>
+		<key>Class</key>
+		<string>PBXDynamicLibraryProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>CODE_SIGNING_ALLOWED</key>
+			<string>YES</string>
+			<key>CODE_SIGNING_REQUIRED</key>
+			<string>NO</string>
+			<key>DYLIB_COMPATIBILITY_VERSION</key>
+			<string>1</string>
+			<key>DYLIB_CURRENT_VERSION</key>
+			<string>1</string>
+			<key>DYLIB_INSTALL_NAME_BASE</key>
+			<string>$(INSTALL_PATH)</string>
+			<key>EXECUTABLE_EXTENSION</key>
+			<string>dylib</string>
+			<key>EXECUTABLE_SUFFIX</key>
+			<string>.$(EXECUTABLE_EXTENSION)</string>
+			<key>FRAMEWORK_FLAG_PREFIX</key>
+			<string>-framework</string>
+			<key>FULL_PRODUCT_NAME</key>
+			<string>$(EXECUTABLE_NAME)</string>
+			<key>GCC_INLINES_ARE_PRIVATE_EXTERN</key>
+			<string>YES</string>
+			<key>INSTALL_PATH</key>
+			<string>/usr/local/lib</string>
+			<key>LD_DYLIB_INSTALL_NAME</key>
+			<string>$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)</string>
+			<key>LIBRARY_FLAG_NOSPACE</key>
+			<string>YES</string>
+			<key>LIBRARY_FLAG_PREFIX</key>
+			<string>-l</string>
+			<key>MACH_O_TYPE</key>
+			<string>mh_dylib</string>
+			<key>PRIVATE_HEADERS_FOLDER_PATH</key>
+			<string>/usr/local/include</string>
+			<key>PUBLIC_HEADERS_FOLDER_PATH</key>
+			<string>/usr/local/include</string>
+			<key>REZ_EXECUTABLE</key>
+			<string>YES</string>
+			<key>STRIP_STYLE</key>
+			<string>debugging</string>
+		</dict>
+		<key>DefaultTargetName</key>
+		<string>Dynamic Library</string>
+		<key>Description</key>
+		<string>Dynamic library</string>
+		<key>IconNamePrefix</key>
+		<string>TargetLibrary</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.library.dynamic</string>
+		<key>Name</key>
+		<string>Dynamic Library</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.mach-o-dylib</string>
+		</array>
+		<key>Type</key>
+		<string>ProductType</string>
+	</dict>
+	<dict>
+		<key>BasedOn</key>
+		<string>com.apple.product-type.bundle</string>
+		<key>Class</key>
+		<string>PBXFrameworkProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>CODE_SIGNING_ALLOWED</key>
+			<string>YES</string>
+			<key>CODE_SIGNING_REQUIRED</key>
+			<string>NO</string>
+			<key>CODE_SIGNING_REQUIRES_TEAM</key>
+			<string>YES</string>
+			<key>DYLIB_INSTALL_NAME_BASE</key>
+			<string>$(INSTALL_PATH)</string>
+			<key>ENTITLEMENTS_REQUIRED</key>
+			<string>NO</string>
+			<key>FRAMEWORK_VERSION</key>
+			<string>A</string>
+			<key>INSTALL_PATH</key>
+			<string>$(LOCAL_LIBRARY_DIR)/Frameworks</string>
+			<key>LD_DYLIB_INSTALL_NAME</key>
+			<string>$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)</string>
+			<key>MACH_O_TYPE</key>
+			<string>mh_dylib</string>
+			<key>STRIP_STYLE</key>
+			<string>debugging</string>
+			<key>WRAPPER_EXTENSION</key>
+			<string>framework</string>
+			<key>WRAPPER_SUFFIX</key>
+			<string>.$(WRAPPER_EXTENSION)</string>
+		</dict>
+		<key>DefaultTargetName</key>
+		<string>Framework</string>
+		<key>Description</key>
+		<string>Framework</string>
+		<key>IconNamePrefix</key>
+		<string>TargetFramework</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.framework</string>
+		<key>Name</key>
+		<string>Framework</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.wrapper.framework</string>
+		</array>
+		<key>Type</key>
+		<string>ProductType</string>
+		<key>WantsBundleIdentifierEditing</key>
+		<string>YES</string>
+		<key>WantsSigningEditing</key>
+		<string>YES</string>
+	</dict>
+	<dict>
+		<key>BasedOn</key>
+		<string>com.apple.product-type.bundle</string>
+		<key>CanEmbedCompilerSanitizerLibraries</key>
+		<string>YES</string>
+		<key>Class</key>
+		<string>PBXBundleProductType</string>
+		<key>DefaultBuildProperties</key>
+		<dict>
+			<key>CODE_SIGNING_ALLOWED</key>
+			<string>YES</string>
+			<key>MACH_O_TYPE</key>
+			<string>mh_execute</string>
+			<key>WRAPPER_EXTENSION</key>
+			<string>xpc</string>
+		</dict>
+		<key>DefaultTargetName</key>
+		<string>XPC Service</string>
+		<key>Description</key>
+		<string>XPC Service</string>
+		<key>IconNamePrefix</key>
+		<string>XPCService</string>
+		<key>Identifier</key>
+		<string>com.apple.product-type.xpc-service</string>
+		<key>Name</key>
+		<string>XPC Service</string>
+		<key>PackageTypes</key>
+		<array>
+			<string>com.apple.package-type.xpc-service</string>
+		</array>
+		<key>ProvisioningProfileRequired</key>
+		<string>YES</string>
+		<key>ProvisioningProfileSupported</key>
+		<string>YES</string>
+		<key>Type</key>
+		<string>ProductType</string>
+		<key>WantsBundleIdentifierEditing</key>
+		<string>YES</string>
+		<key>WantsSigningEditing</key>
+		<string>YES</string>
+	</dict>
+</array>
+</plist>
