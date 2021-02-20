@@ -1,0 +1,271 @@
+//  Copyright © 2015-2016 Apple Inc. All rights reserved.
+(
+
+
+    // Bundle
+    {   Type = ProductType;
+        Identifier = com.apple.product-type.bundle;
+        Class = PBXBundleProductType;
+        Name = "Bundle";
+        Description = "Generic bundle";
+        IconNamePrefix = "TargetPlugin";
+        DefaultTargetName = "Bundle";
+        DefaultBuildProperties = {
+            FULL_PRODUCT_NAME = "$(WRAPPER_NAME)";
+            MACH_O_TYPE = "mh_bundle";
+            WRAPPER_PREFIX = "";
+            WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
+            WRAPPER_EXTENSION = "bundle";
+            WRAPPER_NAME = "$(WRAPPER_PREFIX)$(PRODUCT_NAME)$(WRAPPER_SUFFIX)";
+            FRAMEWORK_FLAG_PREFIX = "-framework";
+            LIBRARY_FLAG_PREFIX = "-l";
+            LIBRARY_FLAG_NOSPACE = YES;
+            STRIP_STYLE = "non-global";
+            GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+        };
+        PackageTypes = (
+            com.apple.package-type.wrapper
+        );
+        IsWrapper = YES;
+        HasInfoPlist = YES;
+        HasInfoPlistStrings = YES;
+        WantsBundleIdentifierEditing = YES;
+        WantsSigningEditing = YES;
+    },
+
+    // Application
+    {   Type = ProductType;
+        Identifier = com.apple.product-type.application;
+        BasedOn = com.apple.product-type.bundle;
+        Class = PBXApplicationProductType;
+        Name = "Application";
+        Description = "Application";
+        IconNamePrefix = "TargetApp";
+        DefaultTargetName = "Application";
+        SupportsOnDemandResources = YES;
+        DefaultBuildProperties = {
+            MACH_O_TYPE = "mh_execute";
+            GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+            GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+            WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
+            WRAPPER_EXTENSION = "app";
+            INSTALL_PATH = "$(LOCAL_APPS_DIR)";
+            STRIP_STYLE = "all";
+
+            // These four prevent the simulator from inheriting this specification.
+            // They probably go at the platform level, but the internal SDK doesn't want them, so they are defined here...
+            ENTITLEMENTS_ALLOWED = YES;
+            PROVISIONING_PROFILE_REQUIRED = YES;
+            CODE_SIGNING_ALLOWED = YES;
+            RESOURCE_RULES_REQUIRED = YES;
+			ENABLE_ON_DEMAND_RESOURCES = YES;
+            SUPPORTS_MACCATALYST = NO;
+        };
+        PackageTypes = (
+            com.apple.package-type.wrapper.application
+        );
+
+        /** Product type validation hooks */
+        Validation = {
+
+            // Checks - a dictionary of checks that are perform just prior to building the product
+            // Each dictionary key is the "XCPropertyMacroExpression" to evaluate
+            // The dictionary value contains the error message to display if the condition evaluates to false.
+            Checks = {
+                // excuse the double negative here, but the message is printed if the test 'fails'
+                "!(  $(VALIDATE_PRODUCT) == NO && $(CODE_SIGN_IDENTITY) == 'iPhone Distribution'  )" = "The Validate Built Product build setting was not enabled when building for Distribution.";
+            };
+
+            // ValidationToolSpec - the identifier of the tool (script) to run after a target is constructed.
+            ValidationToolSpec = "com.apple.build-tools.platform.validate";
+        };
+        CanEmbedCompilerSanitizerLibraries = YES;
+        RunpathSearchPathForEmbeddedFrameworks = "@executable_path/Frameworks";
+        ValidateEmbeddedBinaries = YES;
+        ProvisioningProfileSupported = YES;
+        ProvisioningProfileRequired = YES;
+        WantsBundleIdentifierEditing = YES;
+        WantsSigningEditing = YES;
+    },
+
+    // App Extension
+    {   Type = ProductType;
+        Identifier = "com.apple.product-type.app-extension";
+        BasedOn = "com.apple.product-type.pluginkit-plugin";
+        Class = PBXBundleProductType;
+        Name = "App Extension";
+        Description = "App Extension";
+        IconNamePrefix = AppExtension;
+        DefaultTargetName = "App Extension";
+        "DefaultBuildProperties" = {
+            "CODE_SIGNING_ALLOWED" = YES;
+            "APPLICATION_EXTENSION_API_ONLY" = YES;
+            "PRODUCT_SPECIFIC_LDFLAGS" = "-e _NSExtensionMain";
+            WRAPPER_EXTENSION = "appex";
+            ASSETCATALOG_COMPILER_STANDALONE_ICON_BEHAVIOR = all; // Include standalone files for all reps of extension icons <rdar://problem/32627780>
+            SUPPORTS_MACCATALYST = NO;
+        };
+        PackageTypes = (
+            "com.apple.package-type.app-extension",
+        );
+        ProvisioningProfileSupported = YES;
+        ProvisioningProfileRequired = YES;
+        WantsBundleIdentifierEditing = YES;
+        WantsSigningEditing = YES;
+    },
+
+    // Unit Test Bundle Product
+    {   Type = ProductType;
+        Identifier = com.apple.product-type.bundle.unit-test;
+        BasedOn = com.apple.product-type.bundle;
+        Class = PBXXCTestBundleProductType;
+        Name = "Unit Test Bundle";
+        Description = "Unit Test Bundle";
+        DefaultBuildProperties = {
+            WRAPPER_EXTENSION = "xctest";
+            ENABLE_TESTING_SEARCH_PATHS = YES;
+            PRODUCT_SPECIFIC_LDFLAGS = "-framework XCTest";
+            PRODUCT_TYPE_SWIFT_STDLIB_TOOL_FLAGS = "--scan-executable \"$(PLATFORM_DIR)/Developer/usr/lib/libXCTestSwiftSupport.dylib\"";
+            ENABLE_BITCODE = NO;
+            CODE_SIGNING_ALLOWED = YES;
+            ENTITLEMENTS_REQUIRED = NO;
+            XCTRUNNER_PATH = "$(XCTRUNNER_PATH$(TEST_BUILD_STYLE))";
+        };
+        PackageTypes = (
+            com.apple.package-type.bundle.unit-test
+        );
+        CanEmbedCompilerSanitizerLibraries = YES;
+        IsUnitTest = YES;
+        WantsBundleIdentifierEditing = NO;
+    },
+
+    // UI Testing Bundle
+    {   Type = ProductType;
+        Identifier = com.apple.product-type.bundle.ui-testing;
+        BasedOn = com.apple.product-type.bundle.unit-test;
+        Class = PBXXCTestBundleProductType;
+        Name = "UI Testing Bundle";
+        Description = "UI Testing Bundle";
+        DefaultBuildProperties = {
+            USES_XCTRUNNER = "YES";
+        };
+        PackageTypes = (
+            com.apple.package-type.bundle.unit-test
+        );
+        ProvisioningProfileSupported = YES;
+        ProvisioningProfileRequired = YES;
+        IsUITest = YES;
+        InfoPlistAdditions = {
+            XCTContainsUITests = YES;
+        };
+        WantsBundleIdentifierEditing = NO;
+    },
+
+    // Legacy OCUnit Test Bundle Product
+    {   Type = ProductType;
+        Identifier = com.apple.product-type.bundle.ocunit-test;
+        BasedOn = com.apple.product-type.bundle;
+        Class = PBXBundleProductType;
+        Name = "OCUnit Test Bundle";
+        Description = "OCUnit Test Bundle";
+        DefaultBuildProperties = {
+            WRAPPER_EXTENSION = "octest";
+            ENABLE_BITCODE = NO;
+            CODE_SIGNING_ALLOWED = YES;
+            ENTITLEMENTS_REQUIRED = NO;
+        };
+        PackageTypes = (
+            com.apple.package-type.bundle.ocunit-test
+        );
+        IsUnitTest = YES;
+    },
+
+    // Dynamic library
+    {   Type = ProductType;
+        Identifier = com.apple.product-type.library.dynamic;
+        Class = PBXDynamicLibraryProductType;
+        Name = "Dynamic Library";
+        Description = "Dynamic library";
+        IconNamePrefix = "TargetLibrary";
+        DefaultTargetName = "Dynamic Library";
+        DefaultBuildProperties = {
+            FULL_PRODUCT_NAME = "$(EXECUTABLE_NAME)";
+            MACH_O_TYPE = "mh_dylib";
+            REZ_EXECUTABLE = YES;
+            EXECUTABLE_SUFFIX = ".$(EXECUTABLE_EXTENSION)";
+            EXECUTABLE_EXTENSION = "dylib";
+            PUBLIC_HEADERS_FOLDER_PATH = "/usr/local/include";
+            PRIVATE_HEADERS_FOLDER_PATH = "/usr/local/include";
+            INSTALL_PATH = "/usr/local/lib";
+            DYLIB_INSTALL_NAME_BASE = "$(INSTALL_PATH)";
+            LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
+            DYLIB_COMPATIBILITY_VERSION = "1";
+            DYLIB_CURRENT_VERSION = "1";
+            FRAMEWORK_FLAG_PREFIX = "-framework";
+            LIBRARY_FLAG_PREFIX = "-l";
+            LIBRARY_FLAG_NOSPACE = YES;
+            STRIP_STYLE = "debugging";
+            GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
+            CODE_SIGNING_ALLOWED = YES;
+            CODE_SIGNING_REQUIRED = NO;
+        };
+        PackageTypes = (
+            com.apple.package-type.mach-o-dylib   // default
+        );
+    },
+
+    // Framework
+    {   Type = ProductType;
+        Identifier = com.apple.product-type.framework;
+        BasedOn = com.apple.product-type.bundle;
+        Class = PBXFrameworkProductType;
+        Name = "Framework";
+        Description = "Framework";
+        IconNamePrefix = "TargetFramework";
+        DefaultTargetName = "Framework";
+        DefaultBuildProperties = {
+            MACH_O_TYPE = "mh_dylib";
+            FRAMEWORK_VERSION = "A";
+            WRAPPER_SUFFIX = ".$(WRAPPER_EXTENSION)";
+            WRAPPER_EXTENSION = "framework";
+            INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+            DYLIB_INSTALL_NAME_BASE = "$(INSTALL_PATH)";
+            LD_DYLIB_INSTALL_NAME = "$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(EXECUTABLE_PATH)";
+            STRIP_STYLE = "debugging";
+            CODE_SIGNING_ALLOWED = YES;
+            CODE_SIGNING_REQUIRED = NO;
+            ENTITLEMENTS_REQUIRED = NO;
+            CODE_SIGNING_REQUIRES_TEAM = YES;
+        };
+        PackageTypes = (
+            com.apple.package-type.wrapper.framework
+        );
+        WantsBundleIdentifierEditing = YES;
+        WantsSigningEditing = YES;
+    },
+
+    // XPC Service
+    {
+        Type = ProductType;
+        Identifier = "com.apple.product-type.xpc-service";
+        BasedOn = "com.apple.product-type.bundle";
+        Class = PBXBundleProductType;
+        Name = "XPC Service";
+        Description = "XPC Service";
+        IconNamePrefix = XPCService;
+        DefaultTargetName = "XPC Service";
+        CanEmbedCompilerSanitizerLibraries = YES;
+        "DefaultBuildProperties" = {
+            "MACH_O_TYPE" = "mh_execute";
+            WRAPPER_EXTENSION = "xpc";
+            CODE_SIGNING_ALLOWED = YES;
+        };
+        PackageTypes = (
+            "com.apple.package-type.xpc-service",
+        );
+        ProvisioningProfileSupported = YES;
+        ProvisioningProfileRequired = YES;
+        WantsBundleIdentifierEditing = YES;
+        WantsSigningEditing = YES;
+    },
+)
