@@ -8,8 +8,9 @@ $cp /Applications/Xcode.app/Contents/PlugIns/IDEiOSSupportCore.ideplugin/Content
 $cp Embedded-Device.xcspec /Applications/Xcode.app/Contents/PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources/Embedded-Device.xcspec
 ```
 ## Enjoy it 
+build/codesign and scp to iDevice
 
-##reference
+## reference
 
 [how to Make iOS cmd tools](https://yarshure.medium.com/how-to-make-ios-cmd-tools-6fbbd59e3b68)
 
