@@ -6,6 +6,10 @@
 $git clone https://github.com/yarshure/com.apple.product-type.tool.git
 $cp /Applications/Xcode.app/Contents/PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources/Embedded-Device.xcspec  /Applications/Xcode.app/Contents/PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources/Embedded-Device.xcspec.orig
 $cp Embedded-Device.xcspec /Applications/Xcode.app/Contents/PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources/Embedded-Device.xcspec
+
+for Xcode-Beta (13.0 B1 tested)
+$cp /Applications/Xcode-beta.app/Contents/PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources/Embedded-Device.xcspec  /Applications/Xcode-beta.app/Contents/PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources/Embedded-Device.xcspec.orig
+$cp Embedded-Device.xcspec /Applications/Xcode-beta.app/Contents/PlugIns/IDEiOSSupportCore.ideplugin/Contents/Resources/Embedded-Device.xcspec
 ```
 ## Enjoy it 
 build/codesign and scp to iDevice
