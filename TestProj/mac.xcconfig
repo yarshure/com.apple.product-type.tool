@@ -1,0 +1,11 @@
+//
+//  mac.xcconfig
+//  evv
+//
+//  Created by Apple on 2021/6/10.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+MACH_O_TYPE = mh_execute;
+EXECUTABLE_NAME = abcd

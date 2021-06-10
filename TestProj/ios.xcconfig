@@ -1,0 +1,19 @@
+//
+//  ios.xcconfig
+//  tcpclient1console
+//
+//  Created by yarshure on 2019/6/10.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974 -framework CommonCrypto
+OTHER_LDFLAGS = $(inherited) -framework CoreTelephony -lMobileGestalt -framework SystemConfiguration -framework Security -framework MobileCoreServices -larchive -framework AVFoundation -framework CoreMedia -framework ImageIO -framework CoreLocation -framework MobileWiFi -stdlib=libc++ -lc++
+
+DYLIB_COMPATIBILITY_VERSION = "";
+DYLIB_CURRENT_VERSION = "";
+EXECUTABLE_PREFIX = ;
+EXECUTABLE_SUFFIX = ;
+MACH_O_TYPE = mh_execute;
+HEADER_SEARCH_PATHS = "$(HOME)"/opt/theos/vendor/include
+
+
